@@ -16,11 +16,11 @@ def login():
     if current_user.is_authenticated:
         print("authenticated")
         print(current_user.id)
-        return render_template('/login.html', user={})
+        return render_template('/login.html')
     else:
         print("not authenticated")
         print(current_user)
-        return render_template('/login.html', user={})
+        return render_template('/login.html')
 
 
 @auth.route('/signUp', methods=['POST'])

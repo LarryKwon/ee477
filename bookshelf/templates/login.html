@@ -3,6 +3,7 @@
 {% block content %}
 <h3>Let's Login</h3>
 
+{% if not current_user.is_authenticated %}
 <form action = "/auth/signIn" method="POST" enctype="application/x-www-form-urlencoded">
   <div class="form-group">
     <label for="signIn">SignIn</label>
@@ -20,6 +21,17 @@
   </div>
   <button type="submit" class="btn btn-success">SignUp</button>
 </form>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+    <div class="media-body">
+      <h4>{{current_user.email}}</h4>
+    </div>
+
+  <a href="/auth/logout">
+  logout
+  </a>
+{% endif %}
 
 {% endblock %}
 {# [END form] #}
