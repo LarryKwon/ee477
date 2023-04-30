@@ -15,10 +15,9 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-
+from sqlalchemy import UniqueConstraint
 
 builtin_list = list
-
 
 db = SQLAlchemy()
 
@@ -54,14 +53,21 @@ class Book(db.Model):
         return "<Book(title='%s', author=%s)" % (self.title, self.author)
 
 
-class User(UserMixin):
+class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255))
+    email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
+    is_active = db.Column(db.Boolean, default=True)
+
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
+        return self
 
     def __repr__(self):
         return "<User(email='%s', password=%s)" % (self.email, self.password)
+
 
 # [END model]
 
@@ -76,6 +82,8 @@ def list(limit=10, cursor=None):
     books = builtin_list(map(from_sql, query.all()))
     next_page = cursor + limit if len(books) == limit else None
     return (books, next_page)
+
+
 # [END list]
 
 
@@ -85,6 +93,16 @@ def read(id):
     if not result:
         return None
     return from_sql(result)
+
+
+def getUserInfo(user_email, user_pw):
+    result = User.query.filter(User.email == user_email, User.password == user_pw).first()
+    # print(result)
+    if not result:
+        return None
+    return from_sql(result)
+
+
 # [END read]
 
 
@@ -94,6 +112,16 @@ def create(data):
     db.session.add(book)
     db.session.commit()
     return from_sql(book)
+
+
+def create_user(email, password):
+    user = User(email, password)
+    print(user)
+    db.session.add(user)
+    db.session.commit()
+    return from_sql(user)
+
+
 # [END create]
 
 
@@ -104,6 +132,8 @@ def update(data, id):
         setattr(book, k, v)
     db.session.commit()
     return from_sql(book)
+
+
 # [END update]
 
 

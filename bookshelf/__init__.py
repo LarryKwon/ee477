@@ -44,8 +44,8 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from .crud import crud
     app.register_blueprint(crud, url_prefix='/books')
 
-    # from .login import auth
-    # app.register_blueprint(auth, url_prifix='/auth')
+    from .login import auth
+    app.register_blueprint(auth, url_prefix='/auth')
 
     # Add a default root route.
     @app.route("/")
