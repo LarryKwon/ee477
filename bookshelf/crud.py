@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from flask_login import current_user
 
 from bookshelf import get_model
 from flask import Blueprint, redirect, render_template, request, url_for

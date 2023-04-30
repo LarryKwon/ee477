@@ -23,8 +23,8 @@ from bookshelf.model_cloudsql import User
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
     app.config.from_object(config)
-    # login_manager = LoginManager()
-    # login_manager.init_app(app)
+    login_manager = LoginManager()
+    login_manager.init_app(app)
     app.debug = debug
     app.testing = testing
 

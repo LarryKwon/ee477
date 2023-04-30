@@ -60,6 +60,24 @@ class User(db.Model):
     password = db.Column(db.String(255))
     is_active = db.Column(db.Boolean, default=True)
 
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        print(self.is_active)
+        return self.is_active
+    @property
+    def is_anonymous(self):
+        return False
+
+
+    def get_id(self):
+        try:
+            return str(self.id)
+        except AttributeError:
+            raise NotImplementedError("No `id` attribute - override `get_id`") from None
     def __init__(self, email, password):
         self.email = email
         self.password = password
@@ -98,6 +116,13 @@ def read(id):
 def getUserInfo(user_email, user_pw):
     result = User.query.filter(User.email == user_email, User.password == user_pw).first()
     # print(result)
+    if not result:
+        return None
+    return from_sql(result)
+
+def getUserInfoById(userId):
+    result = User.query.get(userId)
+    print(result)
     if not result:
         return None
     return from_sql(result)
