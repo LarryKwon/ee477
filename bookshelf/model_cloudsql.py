@@ -83,7 +83,6 @@ class User(db.Model):
     def __init__(self, email, password):
         self.email = email
         self.password = password
-        return self
 
     def __repr__(self):
         return "<User(email='%s', password=%s)" % (self.email, self.password)
@@ -100,7 +99,6 @@ class BookRate(db.Model):
         self.book_id = book_id
         self.user_id = user_id
         self.rate = rate
-        return self
 
 
 # [END model]
