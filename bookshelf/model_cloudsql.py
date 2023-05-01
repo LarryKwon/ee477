@@ -44,6 +44,7 @@ class Book(db.Model):
     title = db.Column(db.String(255))
     author = db.Column(db.String(255))
     publishedDate = db.Column(db.String(255))
+    year = db.Column(db.Integer)
     imageUrl = db.Column(db.String(255))
     description = db.Column(db.String(4096))
     createdBy = db.Column(db.String(255))
@@ -68,16 +69,17 @@ class User(db.Model):
     def is_authenticated(self):
         print(self.is_active)
         return self.is_active
+
     @property
     def is_anonymous(self):
         return False
-
 
     def get_id(self):
         try:
             return str(self.id)
         except AttributeError:
             raise NotImplementedError("No `id` attribute - override `get_id`") from None
+
     def __init__(self, email, password):
         self.email = email
         self.password = password
@@ -85,6 +87,14 @@ class User(db.Model):
 
     def __repr__(self):
         return "<User(email='%s', password=%s)" % (self.email, self.password)
+
+
+class BookRate(db.Model):
+    __tablename__ = 'bookRate'
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key = True)
+    rate = db.Column(db.Integer, nullable=True)
 
 
 # [END model]
@@ -113,12 +123,31 @@ def read(id):
     return from_sql(result)
 
 
+def searchBooks(title, year, limit=10, cursor=None):
+    if (title != '' and year != ''):
+        query = Book.query.filter(Book.title == title, Book.year == year).order_by(Book.title).limit(limit).offset(
+            cursor)
+    elif (title == '' and year != ''):
+        query = Book.query.filter(Book.year == year).order_by(Book.title).limit(limit).offset(
+            cursor)
+    elif (year == '' and title != ''):
+        query = Book.query.filter(Book.title == title).order_by(Book.title).limit(limit).offset(
+            cursor)
+    else:
+        query = Book.query.filter(Book.title == title, Book.year == year).order_by(Book.title).limit(limit).offset(
+            cursor)
+    books = builtin_list(map(from_sql, query.all()))
+    next_page = cursor + limit if len(books) == limit else None
+    return (books, next_page)
+
+
 def getUserInfo(user_email, user_pw):
     result = User.query.filter(User.email == user_email, User.password == user_pw).first()
     # print(result)
     if not result:
         return None
     return from_sql(result)
+
 
 def getUserInfoById(userId):
     result = User.query.get(userId)

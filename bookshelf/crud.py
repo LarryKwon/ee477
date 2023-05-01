@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from bookshelf import get_model
 from flask import Blueprint, redirect, render_template, request, url_for
@@ -35,16 +35,33 @@ def list():
         "list.html",
         books=books,
         next_page_token=next_page_token)
+
+
 # [END list]
 
 
 @crud.route('/<id>')
-# @login_required
+@login_required
 def view(id):
-    # if not current_user.is_authenticated:
-    #     return '/auth/login'
+    if not current_user.is_authenticated:
+        return '/auth/login'
     book = get_model().read(id)
     return render_template("view.html", book=book)
+
+
+@crud.route('/search', methods=['GET'])
+def search():
+    title = request.args['title']
+    year = request.args['year']
+    token = request.args.get('page_token', None)
+    if token:
+        token = token.encode('utf-8')
+
+    if (title == '' and year == ''):
+        return redirect('/books/')
+    else:
+        books, next_page_token = get_model().searchBooks(title, year, cursor=token)
+    return render_template("list.html", books=books, next_page_token=next_page_token)
 
 
 # [START add]
@@ -61,6 +78,8 @@ def add():
         return redirect(url_for('.view', id=book['id']))
 
     return render_template("form.html", action="Add", book={})
+
+
 # [END add]
 
 
