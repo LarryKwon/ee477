@@ -23,8 +23,8 @@ crud = Blueprint('crud', __name__)
 @crud.route("/")
 # @login_required
 def list():
-    # if not current_user.is_authenticated:
-    #     return '/auth/login'
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
     token = request.args.get('page_token', None)
     if token:
         token = token.encode('utf-8')
@@ -44,9 +44,12 @@ def list():
 @login_required
 def view(id):
     if not current_user.is_authenticated:
-        return '/auth/login'
+        return redirect('/auth/login')
     book = get_model().read(id)
-    return render_template("view.html", book=book)
+    rate = get_model().count_rate(id)
+    myRate = get_model().get_book_rate(current_user.id, id)
+    print(rate)
+    return render_template("view.html", book=book,rate=rate,myRate=myRate)
 
 
 @crud.route('/search', methods=['GET'])
@@ -68,8 +71,8 @@ def search():
 @crud.route('/add', methods=['GET', 'POST'])
 # @login_required
 def add():
-    # if not current_user.is_authenticated:
-    #     return '/auth/login'
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
 
@@ -86,24 +89,39 @@ def add():
 @crud.route('/<id>/edit', methods=['GET', 'POST'])
 # @login_required
 def edit(id):
-    # if not current_user.is_authenticated:
-    #     return '/auth/login'
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
     book = get_model().read(id)
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-
         book = get_model().update(data, id)
-
         return redirect(url_for('.view', id=book['id']))
 
     return render_template("form.html", action="Edit", book=book)
 
 
 @crud.route('/<id>/delete')
-# @login_required
 def delete(id):
-    # if not current_user.is_authenticated:
-    #     return '/auth/login'
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
     get_model().delete(id)
     return redirect(url_for('.list'))
+
+
+@crud.route('/<id>/rate', methods=['POST'])
+def rate(id):
+    if not current_user.is_authenticated:
+        return redirect('/auth/login')
+    try:
+        rate = int(request.form.get('rating'))
+        bookRate = get_model().get_book_rate(current_user.id, id)
+        if bookRate:
+            get_model().update_rate(current_user.id,id, rate)
+        else:
+            get_model().rate_books(current_user.id, id, rate)
+        return redirect(url_for('.view', id=id))
+    except ValueError:
+        rate = None
+        return redirect(url_for('.view', id=id))
+

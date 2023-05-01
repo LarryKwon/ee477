@@ -42,7 +42,22 @@
     </h4>
     <h5 class="book-author">By {{book.author|default('Unknown', True)}}</h5>
     <p class="book-description">{{book.description}}</p>
+      <p class="book-description"> average rate: {{ rate }}</p>
   </div>
 </div>
+
+<form action = "/books/{{book.id}}/rate" method="POST" enctype="application/x-www-form-urlencoded">
+  <div class="form-group">
+    <label for="rate">Please Rate this book!</label>
+      {% if not myRate %}
+        <p class="book-description"> your rate: not rate yet</p>
+      {% endif %}
+      {% if myRate %}
+        <p class="book-description"> your rate: {{ myRate }}</p>
+      {% endif %}
+      <input placeholder="rating" type="text" name="rating" id="rating" class="form-control"/>
+  </div>
+  <button type="submit" class="btn btn-success">Rate</button>
+</form>
 
 {% endblock %}

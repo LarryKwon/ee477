@@ -15,11 +15,11 @@ def root():
 def login():
     if current_user.is_authenticated:
         print("authenticated")
-        print(current_user.id)
+        # print(current_user.id)
         return render_template('/login.html')
     else:
         print("not authenticated")
-        print(current_user)
+        # print(current_user)
         return render_template('/login.html')
 
 
@@ -44,7 +44,7 @@ def sign_in():
     # 사용자가 입력한 정보가 회원가입된 사용자인지 확인
     user_info = get_model().getUserInfo(user_email, user_pw)
     # print(user_info)
-    if user_info['id']:
+    if user_info:
         # 사용자 객체 생성
         login_info = User(user_email, user_pw)
         login_info.id = user_info['id']
@@ -52,7 +52,7 @@ def sign_in():
         login_user(login_info)
         return redirect('/')
     else:
-        return redirect('auth/relogin')
+        return redirect('/auth/relogin')
 
 
 #

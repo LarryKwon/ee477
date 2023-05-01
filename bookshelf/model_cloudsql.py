@@ -15,7 +15,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from sqlalchemy import UniqueConstraint
+from sqlalchemy import UniqueConstraint, func
 
 builtin_list = list
 
@@ -59,7 +59,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
-    is_active = db.Column(db.Boolean, default=True)
+    isActive = db.Column(db.Boolean, default=True)
 
     @property
     def is_active(self):
@@ -92,9 +92,15 @@ class User(db.Model):
 class BookRate(db.Model):
     __tablename__ = 'bookRate'
     id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key = True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     rate = db.Column(db.Integer, nullable=True)
+
+    def __init__(self, book_id, user_id, rate):
+        self.book_id = book_id
+        self.user_id = user_id
+        self.rate = rate
+        return self
 
 
 # [END model]
@@ -195,6 +201,35 @@ def delete(id):
     Book.query.filter_by(id=id).delete()
     db.session.commit()
 
+def rate_books(userId, bookId, rate):
+    bookRate = BookRate(bookId, userId, rate)
+    print(bookRate)
+    db.session.add(bookRate)
+    db.session.commit()
+    return from_sql(bookRate)
+
+def get_book_rate(userId, bookId):
+    bookRate = BookRate.query.filter(BookRate.book_id == bookId, BookRate.user_id == userId).first()
+    if not bookRate:
+        return None
+    else:
+        return bookRate.rate
+
+def update_rate(userId, bookId, rate):
+    bookRate = BookRate.query.filter(BookRate.book_id == bookId, BookRate.user_id == userId).first()
+    if not bookRate:
+        return None
+    else:
+        bookRate.rate = rate
+        db.session.commit()
+    return from_sql(bookRate)
+
+def count_rate(bookId):
+    bookRate = db.session.query(db.func.avg(BookRate.rate)).filter(BookRate.book_id == bookId).scalar()
+    if not bookRate:
+        return 0
+    else:
+        return bookRate
 
 def _create_database():
     """
