@@ -55,7 +55,7 @@
       {% if myRate %}
         <p class="book-description"> your rate: {{ myRate }}</p>
       {% endif %}
-      <input placeholder="rating" type="text" name="rating" id="rating" class="form-control"/>
+      <input placeholder="rating" type="number" max = 5 min=0 name="rating" id="rating" class="form-control"/>
   </div>
   <button type="submit" class="btn btn-success">Rate</button>
 </form>
